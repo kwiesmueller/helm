@@ -1,0 +1,71 @@
+# Default values for taiga.
+replicaCount: 1
+image:
+  pullPolicy: IfNotPresent
+hostname: taiga.example.com
+publicRegister: "True"
+publicRegisterFrontend: "true"
+databasePassword: 1010101010101010100101010
+smtp:
+  host: smtp.example.com
+  port: 25
+  user: taiga@example.com
+  password: 010010101011101010
+  tls: false
+  ssl: true
+secretKey: alkdmnawdwadmapdmawdpawd
+backend:
+  port: 8000
+  type: ClusterIP
+  resources:
+    limits:
+      cpu: 500m
+      memory: 400Mi
+    requests:
+      cpu: 10m
+      memory: 100Mi
+static:
+  port: 80
+  resources:
+    limits:
+      cpu: 250m
+      memory: 25Mi
+    requests:
+      cpu: 10m
+      memory: 5Mi
+media:
+  port: 8080
+  storage:
+    size: 50Gi
+    accessMode: ReadWriteOnce
+  resources:
+    limits:
+      cpu: 250m
+      memory: 250Mi
+    requests:
+      cpu: 10m
+      memory: 50Mi
+frontend:
+  port: 80
+  type: ClusterIP
+  resources:
+    limits:
+      cpu: 250m
+      memory: 100Mi
+    requests:
+      cpu: 10m
+      memory: 30Mi
+postgres:
+  port: 5432
+  type: ClusterIP
+  storage:
+    size: 10Gi
+    accessMode: ReadWriteOnce
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 100Mi
+    requests:
+      cpu: 10m
+      memory: 50Mi
+

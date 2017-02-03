@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: taiga-frontend
+  namespace: taiga
+  labels:
+    app: taiga
+    role: frontend
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taiga
+      role: frontend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: taiga
+        role: frontend
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      containers:
+      - name: taiga-frontend
+        image: gcr.io/playnet-gce/docker-taiga-frontend:latest
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+          name: taiga-frontend
+        env:
+        - name: PUBLIC_HOSTNAME
+          value: https://{{ .Values.hostname }}/api/v1/
+        - name: PUBLIC_REGISTER_ENABLED
+          value: {{ .Values.publicRegisterFrontend | quote }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        resources:
+{{ toYaml .Values.frontend.resources | indent 12 }}
+

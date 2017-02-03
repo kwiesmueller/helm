@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: taiga
+  namespace: taiga
+  labels:
+    app: taiga
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    traefik.frontend.rule.type: pathprefix
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: {{ .Values.hostname }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: taiga-frontend
+          servicePort: 80
+      - path: /api/
+        backend:
+          serviceName: taiga-backend
+          servicePort: 8000
+      - path: /media/
+        backend:
+          serviceName: taiga-backend
+          servicePort: 8080
+      - path: /static/
+        backend:
+          serviceName: taiga-backend
+          servicePort: 80
+      - path: /admin/
+        backend:
+          serviceName: taiga-backend
+          servicePort: 8000

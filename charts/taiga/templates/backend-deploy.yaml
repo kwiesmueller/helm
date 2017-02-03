@@ -1,0 +1,110 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: taiga-backend
+  namespace: taiga
+  labels:
+    app: taiga
+    role: backend
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taiga
+      role: backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: taiga
+        role: backend
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      containers:
+      - name: taiga-backend
+        image: gcr.io/playnet-gce/docker-taiga-backend:latest
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8000
+          name: taiga-backend
+        env:
+        - name: PUBLIC_HOSTNAME
+          value: {{ .Values.hostname }}
+        - name: PUBLIC_REGISTER_ENABLED
+          value: {{ .Values.publicRegister | quote }}
+        - name: DATABASE_PASSWORD
+          value: {{ .Values.databasePassword }}
+        - name: SMTP_HOST
+          value: {{ .Values.smtp.host }}
+        - name: SMTP_PORT
+          value: '{{ .Values.smtp.port | quote }}'
+        - name: SMTP_USER
+          value: {{ .Values.smtp.user }}
+        - name: SMTP_PASSWORD
+          value: {{ .Values.smtp.password }}
+        - name: SMTP_TLS
+          value: {{ .Values.smtp.tls | quote }}
+        - name: SMTP_SSL
+          value: {{ .Values.smtp.ssl | quote }}
+        - name: SECRET_KEY
+          value: {{ .Values.secretKey }}
+        volumeMounts:
+        - mountPath: /taiga/media
+          name: taiga-media
+        - mountPath: /taiga/static
+          name: taiga-static
+        livenessProbe:
+          httpGet:
+            path: /api/v1/
+            port: 8000
+        readinessProbe:
+          httpGet:
+            path: /api/v1/
+            port: 8000
+        resources:
+{{ toYaml .Values.backend.resources | indent 12 }}
+      - name: taiga-static
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: taiga-static
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html/static
+          name: taiga-static
+          readOnly: true
+        resources:
+{{ toYaml .Values.static.resources | indent 12 }}
+      - name: taiga-media
+        image: kwiesmueller/nginx-autoindex
+        ports:
+        - containerPort: 8080
+          name: taiga-media
+        livenessProbe:
+          httpGet:
+            path: /media/
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /media/
+            port: 8080
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html/media
+          name: taiga-media
+          readOnly: true
+        resources:
+{{ toYaml .Values.media.resources | indent 12 }}
+      volumes:
+      - name: taiga-media
+        persistentVolumeClaim:
+          claimName: taiga-media
+      - emptyDir: {}
+        name: taiga-static

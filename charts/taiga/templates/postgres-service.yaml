@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: taiga-postgres
+  namespace: taiga
+  labels:
+    app: taiga
+    role: postgres
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  type: {{ .Values.postgres.type }}
+  ports:
+  - name: taiga-postgres
+    port: {{ .Values.postgres.port }}
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: taiga
+    role: postgres

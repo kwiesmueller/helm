@@ -1,0 +1,18 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: taiga-postgres
+  namespace: taiga
+  labels:
+    app: taiga
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    volume.beta.kubernetes.io/storage-class: slow
+spec:
+  accessModes:
+    - {{ .Values.postgres.storage.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage.size | quote }}

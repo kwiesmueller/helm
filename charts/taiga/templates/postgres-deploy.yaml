@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: taiga-postgres
+  namespace: taiga
+  labels:
+    app: taiga
+    role: postgres
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taiga
+      role: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: taiga
+        role: postgres
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      containers:
+      - name: taiga-postgres
+        image: postgres:9.4
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 5432
+          name: taiga-postgres
+        env:
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.databasePassword }}
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_USER
+          value: taiga
+        - name: POSTGRES_DB
+          value: taiga
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: taiga-postgres
+        resources:
+{{ toYaml .Values.postgres.resources | indent 12 }}
+      volumes:
+      - name: taiga-postgres
+        persistentVolumeClaim:
+          claimName: taiga-postgres
