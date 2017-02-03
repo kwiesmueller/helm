@@ -19,6 +19,7 @@ There are three Folders:
 ## Use
 To use this repo, create your cluster folder in both values and volumes.
 Then start creating configs for the charts you need.
+If no folders exist aside from the charts, feel free to run ` ./setup.sh your-cluster-name `
 
 After you are done, you should create a file called 'set-cluster.sh'
 ```
